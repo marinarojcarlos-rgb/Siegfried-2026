@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>DIOVAN — Evolución MAT · Siegfried</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: linear-gradient(135deg,#0a0f1e 0%,#0d1b2a 60%,#091018 100%); min-height:100vh; font-family:'Segoe UI',system-ui,sans-serif; color:#e2e8f0; padding:36px 24px; }
+  .container { max-width:900px; margin:0 auto; }
+  .header { display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:16px; margin-bottom:10px; }
+  .badge { font-size:11px; color:#38bdf8; letter-spacing:0.15em; text-transform:uppercase; margin-bottom:6px; }
+  h1 { font-size:30px; font-weight:800; color:#f0f9ff; letter-spacing:-0.5px; margin-bottom:4px; }
+  .sub { font-size:13px; color:#64748b; }
+  .var-badge { background:rgba(239,68,68,0.15); border:1px solid rgba(239,68,68,0.4); border-radius:10px; padding:10px 20px; text-align:center; }
+  .var-badge .vl { font-size:10px; color:#f87171; text-transform:uppercase; letter-spacing:0.1em; margin-bottom:2px; }
+  .var-badge .vv { font-size:26px; font-weight:800; color:#ef4444; }
+  .kpis { display:flex; gap:10px; flex-wrap:wrap; margin:20px 0 28px; }
+  .kpi { background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:8px; padding:8px 14px; }
+  .kpi-l { font-size:10px; color:#64748b; text-transform:uppercase; letter-spacing:0.1em; margin-bottom:3px; }
+  .kpi-v { font-size:18px; font-weight:700; }
+  .tabs { display:flex; gap:4px; margin-bottom:20px; }
+  .tab { padding:7px 16px; border-radius:6px; border:none; cursor:pointer; font-size:12px; font-weight:600; transition:all 0.2s; background:rgba(255,255,255,0.05); color:#94a3b8; }
+  .tab.active { background:#1d4ed8; color:#fff; }
+  .chart-box { background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.07); border-radius:14px; padding:24px 20px; }
+  .chart-note { font-size:12px; color:#64748b; margin-bottom:20px; }
+  .chart-wrap { position:relative; height:300px; }
+  .alert { margin-top:16px; padding:12px 16px; background:rgba(239,68,68,0.06); border-left:3px solid #ef4444; border-radius:0 8px 8px 0; font-size:12px; color:#fca5a5; line-height:1.6; }
+  .footer { text-align:right; font-size:10px; color:#334155; margin-top:12px; }
+  .back { display:inline-block; margin-bottom:20px; font-size:12px; color:#38bdf8; text-decoration:none; }
+  .back:hover { text-decoration:underline; }
+</style>
+</head>
+<body>
+<div class="container">
+  <a href="index.html" class="back">← Volver al inicio</a>
+  <div class="header">
+    <div>
+      <p class="badge">SIEGFRIED · Valsartan · PM IQVIA</p>
+      <h1>DIOVAN — Evolución MAT</h1>
+      <p class="sub">MAT Enero 2022 → MAT Enero 2026</p>
+    </div>
+    <div class="var-badge">
+      <p class="vl">Var. SIE 2022→2026</p>
+      <p class="vv" id="pct-sie">—</p>
+    </div>
+  </div>
+  <div class="kpis" id="kpis"></div>
+  <div class="tabs">
+    <button class="tab active" onclick="setView('units',this)">Unidades SIE</button>
+    <button class="tab" onclick="setView('share',this)">Market Share</button>
+    <button class="tab" onclick="setView('competitors',this)">vs Competencia</button>
+  </div>
+  <div class="chart-box">
+    <p class="chart-note" id="chart-note"></p>
+    <div class="chart-wrap"><canvas id="myChart"></canvas></div>
+    <div class="alert" id="alert-box" style="display:none"></div>
+  </div>
+  <p class="footer">Fuente: PM IQVIA · Febrero 2026</p>
+</div>
+<script>
+const labels = ["MAT Ene 2022","MAT Ene 2023","MAT Ene 2024","MAT Ene 2025","MAT Ene 2026"];
+const sie =        [1087806,1031930,1054693,962668,879635];
+const baliarda =   [2081602,2418333,2771781,2905356,3173502];
+const adium =      [2403942,2579814,2571784,2437360,2521492];
+const montpellier= [984481,1059449,1139948,1212222,1358267];
+const roemmers =   [788147,774458,836827,1017702,1278960];
+const casasco =    [872018,862585,976853,1017907,1053788];
+const lazar =      [531504,507233,437768,497710,489857];
+const totals = labels.map((_,i)=>sie[i]+baliarda[i]+adium[i]+montpellier[i]+roemmers[i]+casasco[i]+lazar[i]);
+const ms = labels.map((_,i)=>+(sie[i]/totals[i]*100).toFixed(1));
+const fmt = v => v>=1000000?(v/1000000).toFixed(2)+"M":(v/1000).toFixed(0)+"K";
+const siePct = ((sie[4]-sie[0])/sie[0]*100).toFixed(1);
+document.getElementById("pct-sie").textContent = siePct+"%";
+const ms0=(sie[0]/totals[0]*100).toFixed(1), ms4=(sie[4]/totals[4]*100).toFixed(1), msDiff=(ms4-ms0).toFixed(1);
+document.getElementById("kpis").innerHTML = [
+  {l:"Unidades 2022",v:fmt(sie[0]),c:"#38bdf8"},{l:"Unidades 2026",v:fmt(sie[4]),c:"#ef4444"},
+  {l:"MS 2022",v:ms0+"%",c:"#a78bfa"},{l:"MS 2026",v:ms4+"%",c:"#f97316"},{l:"Δ Market Share",v:msDiff+" pp",c:"#ef4444"}
+].map(k=>`<div class="kpi"><p class="kpi-l">${k.l}</p><p class="kpi-v" style="color:${k.c}">${k.v}</p></div>`).join("");
+
+const grid = {color:"rgba(255,255,255,0.05)"};
+const tick = (cb) => ({color:"#64748b",font:{size:11},callback:cb});
+let chart;
+function setView(v,btn){
+  document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active")); btn.classList.add("active");
+  if(chart) chart.destroy();
+  document.getElementById("alert-box").style.display="none";
+  const c = document.getElementById("myChart");
+  const g = c.getContext("2d");
+  if(v==="units"){
+    document.getElementById("chart-note").textContent="Unidades vendidas por Siegfried (DIOVAN) en el mercado de Valsartan";
+    const grad=g.createLinearGradient(0,0,0,300); grad.addColorStop(0,"rgba(239,68,68,0.3)"); grad.addColorStop(1,"rgba(239,68,68,0)");
+    chart=new Chart(c,{type:"line",data:{labels,datasets:[{label:"DIOVAN (SIE)",data:sie,borderColor:"#ef4444",backgroundColor:grad,fill:true,tension:0.3,pointRadius:5,pointBackgroundColor:"#ef4444",borderWidth:3}]},
+      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:"#94a3b8",font:{size:11}}}},scales:{x:{ticks:{color:"#64748b",font:{size:11}},grid},y:{ticks:{color:"#64748b",font:{size:11},callback:v=>fmt(v)},grid}}}});
+  } else if(v==="share"){
+    document.getElementById("chart-note").textContent="Participación de mercado (%) de DIOVAN sobre el total de Valsartan";
+    const grad=g.createLinearGradient(0,0,0,300); grad.addColorStop(0,"rgba(167,139,250,0.3)"); grad.addColorStop(1,"rgba(167,139,250,0)");
+    chart=new Chart(c,{type:"line",data:{labels,datasets:[{label:"MS (%)",data:ms,borderColor:"#a78bfa",backgroundColor:grad,fill:true,tension:0.3,pointRadius:5,pointBackgroundColor:"#a78bfa",borderWidth:3}]},
+      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:"#94a3b8",font:{size:11}}}},scales:{x:{ticks:{color:"#64748b",font:{size:11}},grid},y:{min:0,max:20,ticks:{color:"#64748b",font:{size:11},callback:v=>v+"%"},grid}}}});
+  } else {
+    document.getElementById("chart-note").textContent="DIOVAN vs principales competidores — unidades MAT Valsartan";
+    chart=new Chart(c,{type:"line",data:{labels,datasets:[
+      {label:"DIOVAN (SIE)",data:sie,borderColor:"#ef4444",backgroundColor:"transparent",tension:0.3,pointRadius:5,borderWidth:3},
+      {label:"BALIARDA",data:baliarda,borderColor:"#38bdf8",backgroundColor:"transparent",tension:0.3,pointRadius:4,borderWidth:2,borderDash:[5,3]},
+      {label:"ADIUM",data:adium,borderColor:"#34d399",backgroundColor:"transparent",tension:0.3,pointRadius:4,borderWidth:2,borderDash:[5,3]},
+      {label:"MONTPELLIER",data:montpellier,borderColor:"#fbbf24",backgroundColor:"transparent",tension:0.3,pointRadius:4,borderWidth:2,borderDash:[5,3]},
+    ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:"#94a3b8",font:{size:11}}}},scales:{x:{ticks:{color:"#64748b",font:{size:11}},grid},y:{ticks:{color:"#64748b",font:{size:11},callback:v=>fmt(v)},grid}}}});
+    const al=document.getElementById("alert-box");
+    al.innerHTML=`Mientras BALIARDA y MONTPELLIER crecieron <strong style="color:#34d399">+52%</strong> y <strong style="color:#34d399">+38%</strong>, DIOVAN cayó <strong style="color:#ef4444">${siePct}%</strong> en el mismo período.`;
+    al.style.display="block";
+  }
+}
+setView("units",document.querySelector(".tab.active"));
+</script>
+</body>
+</html>
