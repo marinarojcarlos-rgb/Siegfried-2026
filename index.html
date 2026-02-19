@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Siegfried Analytics 2026</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: linear-gradient(135deg, #0a0f1e 0%, #0d1b2a 60%, #091018 100%);
+    min-height: 100vh;
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    color: #e2e8f0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 24px;
+  }
+  .wrapper { max-width: 700px; width: 100%; }
+  .logo { font-size: 11px; color: #38bdf8; letter-spacing: 0.2em; text-transform: uppercase; margin-bottom: 10px; }
+  h1 { font-size: 36px; font-weight: 800; color: #f0f9ff; letter-spacing: -0.5px; margin-bottom: 6px; }
+  .desc { font-size: 14px; color: #64748b; margin-bottom: 48px; }
+  .cards { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 500px) { .cards { grid-template-columns: 1fr; } }
+  .card {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 14px;
+    padding: 28px 24px;
+    text-decoration: none;
+    transition: all 0.25s;
+    display: block;
+  }
+  .card:hover {
+    background: rgba(255,255,255,0.07);
+    border-color: rgba(255,255,255,0.18);
+    transform: translateY(-2px);
+  }
+  .card-tag {
+    font-size: 10px; font-weight: 700; letter-spacing: 0.15em;
+    text-transform: uppercase; margin-bottom: 12px; display: inline-block;
+    padding: 3px 10px; border-radius: 20px;
+  }
+  .tag-red   { background: rgba(239,68,68,0.15);  color: #f87171; }
+  .tag-purple{ background: rgba(168,85,247,0.15); color: #c084fc; }
+  .card-title { font-size: 22px; font-weight: 800; margin-bottom: 6px; color: #f0f9ff; }
+  .card-mol   { font-size: 12px; color: #64748b; margin-bottom: 16px; }
+  .card-stat  { display: flex; gap: 16px; flex-wrap: wrap; }
+  .stat-item  { }
+  .stat-label { font-size: 10px; color: #475569; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 2px; }
+  .stat-val   { font-size: 16px; font-weight: 700; }
+  .card-arrow { margin-top: 20px; font-size: 12px; color: #475569; display: flex; align-items: center; gap: 6px; }
+  .footer { margin-top: 48px; text-align: center; font-size: 11px; color: #1e3a5f; }
+</style>
+</head>
+<body>
+<div class="wrapper">
+  <p class="logo">Siegfried · PM IQVIA · Ene 2026</p>
+  <h1>Analytics MAT</h1>
+  <p class="desc">Evolución de productos clave — últimos 5 períodos MAT</p>
+
+  <div class="cards">
+    <a href="diovan.html" class="card">
+      <span class="card-tag tag-red">Valsartan</span>
+      <p class="card-title">DIOVAN</p>
+      <p class="card-mol">Valsartan · Cardiometabolismo</p>
+      <div class="card-stat">
+        <div class="stat-item">
+          <p class="stat-label">Var. SIE</p>
+          <p class="stat-val" style="color:#ef4444">−19.1%</p>
+        </div>
+        <div class="stat-item">
+          <p class="stat-label">iEvol YTD</p>
+          <p class="stat-val" style="color:#ef4444">88</p>
+        </div>
+        <div class="stat-item">
+          <p class="stat-label">Tendencia</p>
+          <p class="stat-val" style="color:#f97316">↓ Caída</p>
+        </div>
+      </div>
+      <p class="card-arrow">Ver análisis completo →</p>
+    </a>
+
+    <a href="exforge.html" class="card">
+      <span class="card-tag tag-purple">Amlod./Valsar.</span>
+      <p class="card-title">EXFORGE</p>
+      <p class="card-mol">Amlodipina/Valsartan · Cardiometabolismo</p>
+      <div class="card-stat">
+        <div class="stat-item">
+          <p class="stat-label">Var. SIE</p>
+          <p class="stat-val" style="color:#ef4444">−15.9%</p>
+        </div>
+        <div class="stat-item">
+          <p class="stat-label">iEvol YTD</p>
+          <p class="stat-val" style="color:#ef4444">84</p>
+        </div>
+        <div class="stat-item">
+          <p class="stat-label">Mercado</p>
+          <p class="stat-val" style="color:#34d399">+27%</p>
+        </div>
+      </div>
+      <p class="card-arrow">Ver análisis completo →</p>
+    </a>
+  </div>
+
+  <p class="footer">Fuente: PM IQVIA · Febrero 2026</p>
+</div>
+</body>
+</html>

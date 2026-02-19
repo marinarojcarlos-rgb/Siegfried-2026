@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>DIOVAN — Evolución MAT · Siegfried</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/recharts/2.8.0/Recharts.js"></script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: linear-gradient(135deg, #0a0f1e 0%, #0d1b2a 50%, #091018 100%);
+    min-height: 100vh;
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    color: #e2e8f0;
+  }
+  .container { max-width: 920px; margin: 0 auto; padding: 36px 24px; }
+  .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; flex-wrap: wrap; gap: 16px; }
+  .badge-label { font-size: 11px; color: #38bdf8; letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 6px; }
+  .title { font-size: 30px; font-weight: 800; color: #f0f9ff; letter-spacing: -0.5px; margin-bottom: 4px; }
+  .subtitle { font-size: 13px; color: #64748b; }
+  .var-badge {
+    background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.4);
+    border-radius: 10px; padding: 10px 20px; text-align: center;
+  }
+  .var-badge p:first-child { font-size: 10px; color: #f87171; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 2px; }
+  .var-badge p:last-child { font-size: 28px; font-weight: 800; color: #ef4444; }
+  .kpis { display: flex; gap: 10px; flex-wrap: wrap; margin: 20px 0 28px; }
+  .kpi {
+    background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 8px; padding: 8px 14px; min-width: 120px;
+  }
+  .kpi-label { font-size: 10px; color: #64748b; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 3px; }
+  .kpi-value { font-size: 18px; font-weight: 700; }
+  .tabs { display: flex; gap: 4px; margin-bottom: 20px; }
+  .tab {
+    padding: 7px 16px; border-radius: 6px; border: none; cursor: pointer;
+    font-size: 12px; font-weight: 600; transition: all 0.2s;
+    background: rgba(255,255,255,0.05); color: #94a3b8;
+  }
+  .tab.active { background: #1d4ed8; color: #fff; }
+  .chart-box {
+    background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 14px; padding: 24px 16px 16px;
+  }
+  .chart-note { font-size: 12px; color: #64748b; margin-bottom: 16px; padding-left: 8px; }
+  .values-row { display: flex; gap: 6px; margin-top: 16px; padding: 0 8px; }
+  .value-cell { flex: 1; text-align: center; padding: 8px 4px; border-radius: 6px; }
+  .value-cell p:first-child { font-size: 10px; color: #64748b; margin-bottom: 2px; }
+  .value-cell p:last-child { font-size: 13px; font-weight: 700; }
+  .alert-box {
+    margin-top: 16px; padding: 12px 16px;
+    background: rgba(239,68,68,0.06); border-left: 3px solid #ef4444;
+    border-radius: 0 8px 8px 0; font-size: 12px; color: #fca5a5;
+  }
+  .footer { text-align: right; font-size: 10px; color: #334155; margin-top: 12px; }
+</style>
+</head>
+<body>
+<div class="container" id="root"></div>
+
+<script>
+const { createElement: h, useState } = React;
+const { LineChart, AreaChart, ComposedChart, Line, Area, XAxis, YAxis,
+        CartesianGrid, Tooltip, Legend, ResponsiveContainer } = Recharts;
+
+const mats = ["MAT Ene 2022","MAT Ene 2023","MAT Ene 2024","MAT Ene 2025","MAT Ene 2026"];
+const sie =  [1087806, 1031930, 1054693, 962668, 879635];
+const baliarda =  [2081602, 2418333, 2771781, 2905356, 3173502];
+const adium =     [2403942, 2579814, 2571784, 2437360, 2521492];
+const montpellier=[984481,  1059449, 1139948, 1212222, 1358267];
+const totals = mats.map((_,i) => sie[i]+baliarda[i]+adium[i]+montpellier[i]+788147+872018+531504+37882+71612);
+
+const data = mats.map((m,i) => ({
+  period: m,
+  "DIOVAN (SIE)": sie[i],
+  "BALIARDA": baliarda[i],
+  "ADIUM": adium[i],
+  "MONTPELLIER": montpellier[i],
+  "MS (%)": parseFloat((sie[i]/totals[i]*100).toFixed(1))
+}));
+
+const fmt = v => v >= 1000000 ? (v/1000000).toFixed(2)+"M" : (v/1000).toFixed(0)+"K";
+
+const CustomTooltip = ({active, payload, label}) => {
+  if (!active || !payload) return null;
+  return h("div", { style: {
+    background:"#0f1923", border:"1px solid #1e3a5f",
+    padding:"12px 16px", borderRadius:"8px", fontSize:"12px"
+  }},
+    h("p", { style:{color:"#7dd3fc",fontWeight:"700",marginBottom:8,fontSize:13} }, label),
+    payload.map((p,i) => h("div", { key:i, style:{
+      display:"flex", justifyContent:"space-between", gap:24,
+      color:"#e2e8f0", marginBottom:4
+    }},
+      h("span", {style:{color:p.color}}, p.name),
+      h("span", {style:{fontWeight:"600"}}, p.name==="MS (%)" ? p.value+"%" : fmt(p.value))
+    ))
+  );
+};
+
+function App() {
+  const [view, setView] = useState("units");
+  const pct = ((sie[4]-sie[0])/sie[0]*100).toFixed(1);
+  const ms0 = (sie[0]/totals[0]*100).toFixed(1);
+  const ms4 = (sie[4]/totals[4]*100).toFixed(1);
+  const msDiff = (ms4-ms0).toFixed(1);
+
+  const tabs = [
+    {id:"units",   label:"Unidades SIE"},
+    {id:"share",   label:"Market Share"},
+    {id:"competitors", label:"vs Competencia"},
+  ];
+
+  const kpis = [
+    {label:"Unidades 2022", val:fmt(sie[0]),  color:"#38bdf8"},
+    {label:"Unidades 2026", val:fmt(sie[4]),  color:"#ef4444"},
+    {label:"MS 2022",       val:ms0+"%",      color:"#a78bfa"},
+    {label:"MS 2026",       val:ms4+"%",      color:"#f97316"},
+    {label:"Δ Market Share",val:msDiff+" pp", color:"#ef4444"},
+  ];
+
+  return h("div", null,
+    h("div", {className:"header"},
+      h("div", null,
+        h("p", {className:"badge-label"}, "SIEGFRIED · Valsartan · PM IQVIA"),
+        h("h1", {className:"title"}, "DIOVAN — Evolución MAT"),
+        h("p", {className:"subtitle"}, "MAT Enero 2022 → MAT Enero 2026")
+      ),
+      h("div", {className:"var-badge"},
+        h("p", null, "Var. 2022→2026"),
+        h("p", null, pct+"%")
+      )
+    ),
+
+    h("div", {className:"kpis"},
+      kpis.map(k => h("div", {key:k.label, className:"kpi"},
+        h("p", {className:"kpi-label"}, k.label),
+        h("p", {className:"kpi-value", style:{color:k.color}}, k.val)
+      ))
+    ),
+
+    h("div", {className:"tabs"},
+      tabs.map(t => h("button", {
+        key:t.id, className:"tab"+(view===t.id?" active":""),
+        onClick:()=>setView(t.id)
+      }, t.label))
+    ),
+
+    h("div", {className:"chart-box"},
+      view === "units" && h("div", null,
+        h("p", {className:"chart-note"}, "Unidades vendidas por Siegfried (DIOVAN) — mercado Valsartan"),
+        h(ResponsiveContainer, {width:"100%", height:300},
+          h(ComposedChart, {data},
+            h("defs", null,
+              h("linearGradient", {id:"g1",x1:"0",y1:"0",x2:"0",y2:"1"},
+                h("stop",{offset:"5%",stopColor:"#ef4444",stopOpacity:0.3}),
+                h("stop",{offset:"95%",stopColor:"#ef4444",stopOpacity:0})
+              )
+            ),
+            h(CartesianGrid, {strokeDasharray:"3 3",stroke:"rgba(255,255,255,0.06)"}),
+            h(XAxis, {dataKey:"period",tick:{fill:"#64748b",fontSize:11},axisLine:false,tickLine:false}),
+            h(YAxis, {tickFormatter:fmt,tick:{fill:"#64748b",fontSize:11},axisLine:false,tickLine:false}),
+            h(Tooltip, {content:h(CustomTooltip)}),
+            h(Area, {type:"monotone",dataKey:"DIOVAN (SIE)",stroke:"#ef4444",strokeWidth:3,
+              fill:"url(#g1)",dot:{fill:"#ef4444",r:5,strokeWidth:0},activeDot:{r:7}})
+          )
+        ),
+        h("div", {className:"values-row"},
+          data.map((d,i) => h("div", {key:i, className:"value-cell",
+            style:{background:i===4?"rgba(239,68,68,0.1)":"transparent"}},
+            h("p", null, d.period.replace("MAT ","")),
+            h("p", {style:{color:i===4?"#ef4444":"#e2e8f0"}}, fmt(d["DIOVAN (SIE)"]))
+          ))
+        )
+      ),
+
+      view === "share" && h("div", null,
+        h("p", {className:"chart-note"}, "Participación de mercado (%) de DIOVAN sobre el total de Valsartan"),
+        h(ResponsiveContainer, {width:"100%", height:300},
+          h(ComposedChart, {data},
+            h("defs", null,
+              h("linearGradient", {id:"g2",x1:"0",y1:"0",x2:"0",y2:"1"},
+                h("stop",{offset:"5%",stopColor:"#a78bfa",stopOpacity:0.3}),
+                h("stop",{offset:"95%",stopColor:"#a78bfa",stopOpacity:0})
+              )
+            ),
+            h(CartesianGrid, {strokeDasharray:"3 3",stroke:"rgba(255,255,255,0.06)"}),
+            h(XAxis, {dataKey:"period",tick:{fill:"#64748b",fontSize:11},axisLine:false,tickLine:false}),
+            h(YAxis, {domain:[0,25],tickFormatter:v=>v+"%",tick:{fill:"#64748b",fontSize:11},axisLine:false,tickLine:false}),
+            h(Tooltip, {content:h(CustomTooltip)}),
+            h(Area, {type:"monotone",dataKey:"MS (%)",stroke:"#a78bfa",strokeWidth:3,
+              fill:"url(#g2)",dot:{fill:"#a78bfa",r:5,strokeWidth:0},activeDot:{r:7}})
+          )
+        ),
+        h("div", {className:"values-row"},
+          data.map((d,i) => h("div", {key:i, className:"value-cell",
+            style:{background:i===4?"rgba(167,139,250,0.1)":"transparent"}},
+            h("p", null, d.period.replace("MAT ","")),
+            h("p", {style:{color:i===4?"#a78bfa":"#e2e8f0"}}, d["MS (%)"]+"%" )
+          ))
+        )
+      ),
+
+      view === "competitors" && h("div", null,
+        h("p", {className:"chart-note"}, "DIOVAN vs principales competidores en unidades — MAT Valsartan"),
+        h(ResponsiveContainer, {width:"100%", height:300},
+          h(LineChart, {data},
+            h(CartesianGrid, {strokeDasharray:"3 3",stroke:"rgba(255,255,255,0.06)"}),
+            h(XAxis, {dataKey:"period",tick:{fill:"#64748b",fontSize:11},axisLine:false,tickLine:false}),
+            h(YAxis, {tickFormatter:fmt,tick:{fill:"#64748b",fontSize:11},axisLine:false,tickLine:false}),
+            h(Tooltip, {content:h(CustomTooltip)}),
+            h(Legend, {wrapperStyle:{fontSize:11,color:"#94a3b8"}}),
+            h(Line, {type:"monotone",dataKey:"DIOVAN (SIE)",stroke:"#ef4444",strokeWidth:3,dot:{r:4}}),
+            h(Line, {type:"monotone",dataKey:"BALIARDA",stroke:"#38bdf8",strokeWidth:2,strokeDasharray:"4 2",dot:{r:3}}),
+            h(Line, {type:"monotone",dataKey:"ADIUM",stroke:"#34d399",strokeWidth:2,strokeDasharray:"4 2",dot:{r:3}}),
+            h(Line, {type:"monotone",dataKey:"MONTPELLIER",stroke:"#fbbf24",strokeWidth:2,strokeDasharray:"4 2",dot:{r:3}})
+          )
+        ),
+        h("div", {className:"alert-box"},
+          "Mientras BALIARDA y MONTPELLIER crecieron +52% y +38% respectivamente, DIOVAN cayó ",
+          h("strong", {style:{color:"#ef4444"}}, pct+"%"),
+          " en el mismo período."
+        )
+      )
+    ),
+
+    h("p", {className:"footer"}, "Fuente: PM IQVIA · Febrero 2026")
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(h(App));
+</script>
+</body>
+</html>
